@@ -106,5 +106,5 @@ aws cloudformation deploy --template-file storage/s3.yaml --stack-name s3-stack 
 
 ## 👤 Author
 
-**Rami Alshaar**
-(https://github.com/Rami-shaar)
+**Rami Alshaar**  
+[GitHub Profile](https://github.com/Rami-shaar)
