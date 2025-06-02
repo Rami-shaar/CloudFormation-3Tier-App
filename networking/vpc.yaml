@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "VPC with 2 public and 2 private subnets across 2 Availability Zones"
+
+Metadata:
+  Author: Rami
+  Purpose: Base networking layer for a 3-tier architecture
+  LastUpdated: 2025-06-02
+
+Resources:
+
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MyVPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: MyIGW
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet1
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet2
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet1
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.4.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet2
+
+Outputs:
+
+  VPCId:
+    Description: "ID of the VPC"
+    Value: !Ref MyVPC
+    Export:
+      Name: VPCId
+
+  InternetGatewayId:
+    Description: "ID of the IGW"
+    Value: !Ref InternetGateway
+    Export:
+      Name: InternetGatewayId
+
+  PublicSubnet1Id:
+    Description: "ID of Public Subnet 1"
+    Value: !Ref PublicSubnet1
+    Export:
+      Name: PublicSubnet1Id
+
+  PublicSubnet2Id:
+    Description: "ID of Public Subnet 2"
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: PublicSubnet2Id
+
+  PrivateSubnet1Id:
+    Description: "ID of Private Subnet 1"
+    Value: !Ref PrivateSubnet1
+    Export:
+      Name: PrivateSubnet1Id
+
+  PrivateSubnet2Id:
+    Description: "ID of Private Subnet 2"
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: PrivateSubnet2Id
+
+

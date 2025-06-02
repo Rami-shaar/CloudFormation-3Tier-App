@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "EC2 Auto Scaling Group with ALB (using imported security groups)"
+
+Metadata:
+  Author: Rami
+  Purpose: Deploys EC2 Auto Scaling Group with ALB
+  LastUpdated: 2025-06-02
+
+Parameters:
+  VPCId:
+    Type: String
+    Description: "VPC ID where resources will be deployed"
+
+  PublicSubnet1Id:
+    Type: String
+    Description: "First public subnet ID for ALB and ASG"
+
+  PublicSubnet2Id:
+    Type: String
+    Description: "Second public subnet ID for high availability"
+
+Resources:
+
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: ami-0fc32db49bc3bfbb1  # Amazon Linux 2 AMI (eu-west-2)
+        InstanceType: t2.micro
+        SecurityGroupIds:
+          - !ImportValue InstanceSG
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl enable httpd
+            systemctl start httpd
+            echo "<h1>Deployed via CloudFormation ASG</h1>" > /var/www/html/index.html
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: WebServerInstance
+      LaunchTemplateName: WebServerTemplate
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: MyALB
+      Subnets:
+        - !Ref PublicSubnet1Id
+        - !Ref PublicSubnet2Id
+      SecurityGroups:
+        - !ImportValue ALBSG
+      Scheme: internet-facing
+      Type: application
+      Tags:
+        - Key: Name
+          Value: ApplicationLoadBalancer
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: MyTargetGroup
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VPCId
+      TargetType: instance
+      HealthCheckPath: /
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: "1"
+      MaxSize: "1"
+      DesiredCapacity: "1"
+      VPCZoneIdentifier:
+        - !Ref PublicSubnet1Id
+        - !Ref PublicSubnet2Id
+      TargetGroupARNs:
+        - !Ref TargetGroup
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      Tags:
+        - Key: Name
+          Value: AutoScalingWebTier
+          PropagateAtLaunch: true
+
+Outputs:
+  ALBDNSName:
+    Description: "DNS name of the Application Load Balancer"
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Export:
+      Name: ALBDNS
+
+
+

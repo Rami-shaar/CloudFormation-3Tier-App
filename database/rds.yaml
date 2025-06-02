@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "MySQL RDS instance in private subnets"
+
+Metadata:
+  Author: Rami
+  Purpose: Creates a MySQL RDS DB instance in two private subnets
+  LastUpdated: 2025-06-02
+
+Parameters:
+
+  PrivateSubnet1Id:
+    Type: String
+    Description: "First private subnet ID for DB Subnet Group"
+
+  PrivateSubnet2Id:
+    Type: String
+    Description: "Second private subnet ID for DB Subnet Group"
+
+  DBUsername:
+    Type: String
+    Default: admin
+    Description: "Master username for the RDS instance"
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: "Master password for the RDS instance"
+
+Resources:
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Private subnets for RDS"
+      SubnetIds:
+        - !Ref PrivateSubnet1Id
+        - !Ref PrivateSubnet2Id
+      DBSubnetGroupName: my-db-subnet-group
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: mydb-instance
+      Engine: mysql
+      EngineVersion: 8.0
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !ImportValue RDSSG
+      PubliclyAccessible: false
+      MultiAZ: false
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: RDSMySQLInstance
+
+Outputs:
+  RDSInstanceEndpoint:
+    Description: "RDS Endpoint"
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: RDSEndpoint
+

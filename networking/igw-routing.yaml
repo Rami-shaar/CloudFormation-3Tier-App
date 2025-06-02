@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Routing setup for public subnets through Internet Gateway"
+
+Metadata:
+  Author: Rami
+  Purpose: Attaches IGW and creates a route table for public subnets
+  LastUpdated: 2025-06-02
+
+Parameters:
+  VPCId:
+    Type: String
+    Description: "VPC where the route table will be created"
+
+  InternetGatewayId:
+    Type: String
+    Description: "Internet Gateway to route internet-bound traffic"
+
+  PublicSubnet1Id:
+    Type: String
+    Description: "First public subnet to associate with the route table"
+
+  PublicSubnet2Id:
+    Type: String
+    Description: "Second public subnet to associate with the route table"
+
+Resources:
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPCId
+      Tags:
+        - Key: Name
+          Value: Public-Route-Table
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayId
+
+  PublicSubnet1Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1Id
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2Id
+      RouteTableId: !Ref PublicRouteTable
+
+Outputs:
+  PublicRouteTableId:
+    Description: "Route table ID used by public subnets"
+    Value: !Ref PublicRouteTable
+    Export:
+      Name: PublicRouteTableId
+
+

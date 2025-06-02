@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "S3 bucket with versioning enabled for application storage"
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: "Globally unique S3 bucket name"
+
+Resources:
+
+  AppS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Name
+          Value: AppStorage
+
+Outputs:
+  S3BucketName:
+    Description: "Name of the S3 bucket"
+    Value: !Ref AppS3Bucket
+    Export:
+      Name: AppS3BucketName
+

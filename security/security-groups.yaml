@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Security Groups for ALB, EC2, and RDS in a 3-tier architecture"
+
+Parameters:
+  VPCId:
+    Type: String
+    Description: "ID of the VPC where security groups will be created"
+
+Resources:
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow HTTP traffic from the internet to the ALB"
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: ALBSG
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow HTTP traffic from ALB to EC2"
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: InstanceSG
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow MySQL traffic from EC2 instances to RDS"
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: RDSSG
+
+Outputs:
+
+  ALBSG:
+    Description: "ALB Security Group ID"
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: ALBSG
+
+  InstanceSG:
+    Description: "EC2 Instance Security Group ID"
+    Value: !Ref InstanceSecurityGroup
+    Export:
+      Name: InstanceSG
+
+  RDSSG:
+    Description: "RDS Security Group ID"
+    Value: !Ref RDSSecurityGroup
+    Export:
+      Name: RDSSG
+
+
+

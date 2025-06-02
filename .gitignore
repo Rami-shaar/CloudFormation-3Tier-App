@@ -1,0 +1,5 @@
+# Ignore AWS credential files and system junk
+*.log
+.aws/
+*.DS_Store
+*.env

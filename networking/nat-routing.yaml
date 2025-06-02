@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "NAT Gateway and private subnet routing"
+
+Metadata:
+  Author: Rami
+  Purpose: Provides outbound internet access for private subnets using NAT Gateway
+  LastUpdated: 2025-06-02
+
+Parameters:
+  VPCId:
+    Type: String
+    Description: "VPC ID where resources will be deployed"
+
+  PublicSubnet1Id:
+    Type: String
+    Description: "Public subnet for NAT Gateway"
+
+  PrivateSubnet1Id:
+    Type: String
+    Description: "First private subnet to route via NAT"
+
+  PrivateSubnet2Id:
+    Type: String
+    Description: "Second private subnet to route via NAT"
+
+Resources:
+
+  NATIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NATIP.AllocationId
+      SubnetId: !Ref PublicSubnet1Id
+      Tags:
+        - Key: Name
+          Value: NATGateway
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPCId
+      Tags:
+        - Key: Name
+          Value: Private-Route-Table
+
+  NATRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGateway
+
+  PrivateSubnet1Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1Id
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2Id
+      RouteTableId: !Ref PrivateRouteTable
+
+Outputs:
+  NATGatewayId:
+    Description: "ID of the NAT Gateway"
+    Value: !Ref NATGateway
+    Export:
+      Name: NATGatewayId
