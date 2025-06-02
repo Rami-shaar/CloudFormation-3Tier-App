@@ -72,37 +72,56 @@ cloudformation-3tier-app/
 
 ## 🚀 Deployment Options
 
-### 1️⃣ Manual Deployment (Stack-by-Stack)
+### 1️⃣ Manual Deployment (Stack-by-Stack) – PowerShell
 
-```bash
+```powershell
 # 1. Create core networking
-aws cloudformation deploy --template-file networking/vpc.yaml --stack-name my-vpc-stack --region eu-west-2
+aws cloudformation deploy `
+  --template-file networking/vpc.yaml `
+  --stack-name my-vpc-stack `
+  --region eu-west-2
 
 # 2. Internet Gateway & Routing
-aws cloudformation deploy --template-file networking/igw-routing.yaml --stack-name routing-stack \
-  --parameter-overrides VPCId=... PublicSubnet1Id=... PublicSubnet2Id=... InternetGatewayId=... \
+aws cloudformation deploy `
+  --template-file networking/igw-routing.yaml `
+  --stack-name routing-stack `
+  --parameter-overrides VPCId=... PublicSubnet1Id=... PublicSubnet2Id=... InternetGatewayId=... `
   --region eu-west-2
 
 # 3. NAT Gateway & Private Routing
-aws cloudformation deploy --template-file networking/nat-routing.yaml --stack-name nat-stack \
-  --parameter-overrides VPCId=... PublicSubnet1Id=... PrivateSubnet1Id=... PrivateSubnet2Id=... \
+aws cloudformation deploy `
+  --template-file networking/nat-routing.yaml `
+  --stack-name nat-stack `
+  --parameter-overrides VPCId=... PublicSubnet1Id=... PrivateSubnet1Id=... PrivateSubnet2Id=... `
   --region eu-west-2
 
 # 4. Security Groups
-aws cloudformation deploy --template-file security/security-groups.yaml --stack-name security-stack \
-  --parameter-overrides VPCId=... --region eu-west-2
+aws cloudformation deploy `
+  --template-file security/security-groups.yaml `
+  --stack-name security-stack `
+  --parameter-overrides VPCId=... `
+  --region eu-west-2
 
 # 5. Compute (ALB, ASG, EC2)
-aws cloudformation deploy --template-file compute/ec2-asg-alb.yaml --stack-name compute-stack \
-  --parameter-overrides VPCId=... PublicSubnet1Id=... PublicSubnet2Id=... --region eu-west-2
+aws cloudformation deploy `
+  --template-file compute/ec2-asg-alb.yaml `
+  --stack-name compute-stack `
+  --parameter-overrides VPCId=... PublicSubnet1Id=... PublicSubnet2Id=... `
+  --region eu-west-2
 
 # 6. Database (RDS)
-aws cloudformation deploy --template-file database/rds.yaml --stack-name rds-stack \
-  --parameter-overrides PrivateSubnet1Id=... PrivateSubnet2Id=... DBPassword=... --region eu-west-2
+aws cloudformation deploy `
+  --template-file database/rds.yaml `
+  --stack-name rds-stack `
+  --parameter-overrides PrivateSubnet1Id=... PrivateSubnet2Id=... DBPassword=... `
+  --region eu-west-2
 
 # 7. Storage (S3)
-aws cloudformation deploy --template-file storage/s3.yaml --stack-name s3-stack \
-  --parameter-overrides BucketName=your-unique-bucket-name --region eu-west-2
+aws cloudformation deploy `
+  --template-file storage/s3.yaml `
+  --stack-name s3-stack `
+  --parameter-overrides BucketName=your-unique-bucket-name `
+  --region eu-west-2
 ```
 
 ---
@@ -125,11 +144,11 @@ This project includes an optional `parent(optional).yaml` file to deploy the ent
    ```
 
 2. **Deploy the nested parent stack:**
-   ```bash
-   aws cloudformation create-stack \
-     --stack-name 3tier-nested-app \
-     --template-body file://parent(optional).yaml \
-     --parameters ParameterKey=TemplateBucket,ParameterValue=my-3tier-templates \
+   ```powershell
+   aws cloudformation create-stack `
+     --stack-name 3tier-nested-app `
+     --template-body file://parent(optional).yaml `
+     --parameters ParameterKey=TemplateBucket,ParameterValue=my-3tier-templates `
      --capabilities CAPABILITY_NAMED_IAM
    ```
 
@@ -149,4 +168,3 @@ This project includes an optional `parent(optional).yaml` file to deploy the ent
 
 **Rami Alshaar**  
 [GitHub Profile](https://github.com/Rami-shaar)
-
