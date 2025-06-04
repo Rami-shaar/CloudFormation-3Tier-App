@@ -45,7 +45,7 @@ This project provisions a complete production-grade 3-tier architecture on AWS u
 - Web server auto-deploys Apache + test HTML  
 - Security groups follow least-privilege principles  
 - All sensitive params (e.g., DB password) are passed securely  
-- Includes an S3 storage module for future use (e.g., static assets, logs, or uploads).  
+- Includes an S3 storage stack for future use (e.g., static assets, logs, or uploads).  
   *Note: Not currently wired into the stack — included for modular structure and extensibility.*
 
 ---
