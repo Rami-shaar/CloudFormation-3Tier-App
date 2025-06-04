@@ -37,14 +37,16 @@ This project provisions a complete production-grade 3-tier architecture on AWS u
 
 ---
 
-## ✅ Features
+### ✅ Features
 
-* Modular YAML templates with independent stack deployment
-* Uses `!ImportValue` for clean decoupling between stacks
-* Production-grade network layout (isolated tiers)
-* Web server auto-deploys Apache + test HTML
-* Security groups follow least-privilege principles
-* All sensitive params (e.g., DB password) are passed securely
+- Modular YAML templates with independent stack deployment  
+- Uses `!ImportValue` for clean decoupling between stacks  
+- Production-grade network layout (isolated tiers)  
+- Web server auto-deploys Apache + test HTML  
+- Security groups follow least-privilege principles  
+- All sensitive params (e.g., DB password) are passed securely  
+- Includes an S3 storage module for future use (e.g., static assets, logs, or uploads).  
+  *Note: Not currently wired into the stack — included for modular structure and extensibility.*
 
 ---
 
